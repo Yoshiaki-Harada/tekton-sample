@@ -1,0 +1,4 @@
+name: kpi-api
+sources:
+- https://github.com/Yoshiaki-Harada/tekton-sample/tree/main/app
+version: 1.0.0

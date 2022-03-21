@@ -1,0 +1,25 @@
+apiVersion: skaffold/v2beta21
+kind: Config
+metadata:
+  name: ktor-sample
+build:
+  artifacts:
+    - image: haradayoshiaki777/ktor-sample
+      context: ../app
+      docker:
+        dockerfile: ../env/Dockerfile
+  local:
+    push: false
+    useBuildkit: true
+deploy:
+  helm:
+    releases:
+      - name: ktor-sample-secret
+        chartPath: helm/secret
+      - name: ktor-sample
+        chartPath: helm/deployments
+        artifactOverrides:
+          image: haradayoshiaki777/ktor-sample
+        setValues:
+          revision: latest
+          imagePullPolicy: Never

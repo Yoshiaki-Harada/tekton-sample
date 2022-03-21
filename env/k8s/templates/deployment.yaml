@@ -1,0 +1,23 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ktor-sample
+  labels:
+    revision: "{{ .Values.revision }}"
+spec:
+  replicas: {{ .Values.replicas }}
+  template:
+    metadata:
+      labels:
+        name: ktor-sample
+        revision: "{{ .Values.revision }}"
+    spec:
+      containers:
+        - name: ktor-sample
+          image: {{ .Values.image }}
+          imagePullPolicy: {{ .Values.imagePullPolicy }}
+          ports:
+            - containerPort: 20300
+  selector:
+    matchLabels:
+      name: ktor-sample
