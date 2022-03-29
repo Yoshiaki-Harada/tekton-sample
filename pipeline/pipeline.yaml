@@ -1,0 +1,64 @@
+apiVersion: tekton.dev/v1beta1
+kind: Pipeline
+metadata:
+  name: ktor-sample-pipeline
+spec:
+  description: |
+    お試し
+  params:
+  - name: branch-name
+    type: string
+    description: The git branch to clone.
+  workspaces:
+  - name: shared-data
+    description: |
+      This workspace will receive the cloned git repo and be passed
+      to the next Task for the repo's README.md file to be read.
+  tasks:
+  - name: fetch-repo
+    taskRef:
+      name: git-clone
+      bundle: gcr.io/tekton-releases/catalog/upstream/git-clone:0.5
+    workspaces:
+    - name: output
+      workspace: shared-data
+    params:
+    - name: url
+      value: https://github.com/Yoshiaki-Harada/tekton-sample
+    - name: revision
+      value: $(params.branch-name)
+  - name: skaffold-build
+    runAfter: ["fetch-repo"]  # Wait until the clone is done before reading the readme.
+    taskRef:
+      name: skaffold
+      kind: ClusterTask
+    workspaces:
+      - name: source
+        workspace: shared-data
+    params:
+    - name: pathToSkaffoldDir
+      value: env
+    - name: command
+      value: build
+    - name: args
+      value: ""
+---
+apiVersion: tekton.dev/v1beta1
+kind: PipelineRun
+metadata:
+  name: ktor-sample-pipeline-run
+spec:
+  pipelineRef:
+    name: ktor-sample-pipeline
+  workspaces:
+  - name: shared-data
+    volumeClaimTemplate:
+      spec:
+        accessModes:
+        - ReadWriteOnce
+        resources:
+          requests:
+            storage: 1Gi
+  params:
+  - name: branch-name
+    value: main
